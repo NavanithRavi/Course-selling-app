@@ -1,0 +1,116 @@
+<head>
+    admin page
+</head>
+<script>
+    var i=0;
+    function getCourses(){
+      fetch(`http://localhost:3001/getCourses`,{
+        method:"GET"
+      }).then((res)=>{
+        res.json().then((res)=>{
+            var parent = document.getElementById("mainarea");
+            res.forEach(element=>{
+                var child = document.createElement("div");
+                child.id = "child"+i;
+                for(let key in element){
+                    var d = document.createElement("span");
+                    
+                    if(key==="id"){
+                                d.innerHTML=element[key];
+                            }
+                            else{
+                                d.innerHTML=JSON.stringify(element[key]);
+                            }
+                    child.appendChild(d);
+                }
+                parent.appendChild(child);
+                i++;
+            })
+        })
+      })
+    }
+    window.onload=getCourses;
+    function addCourse(){
+        var id = document.getElementById("id").value;
+        var title = document.getElementById("title").value;
+        var description = document.getElementById("description").value;
+        var price = document.getElementById("price").value;
+        fetch(`http://localhost:3001/postCourse`,{
+            method:'POST',
+            body:JSON.stringify({
+            "id":id,
+            "title":title,
+            "description":description,
+            "price":price
+           }),
+           headers:{
+        "Content-Type":"application/json"
+        }
+        }).then((res)=>{
+            res.json().then((res)=>{
+                var list=[];
+                var parentElement = document.getElementById("mainarea");
+                // var child = document.createElement("div");
+                // child.id = "child"+i;
+                res.forEach(element => {
+                    console.log("inside")
+                    var bool = true;
+                    for(var c=0;c<parentElement.children.length;c++){
+                        var child = parentElement.children[c];
+                        var check = String(element.id).trim();
+                        console.log(check);
+                        var childCheck = String(child.children[0].innerHTML).trim();
+                        console.log(childCheck);
+                        if(check==childCheck){
+                            var span = child.children[1];
+                            span.innerHTML=JSON.stringify(element.title);
+                            list.push(child.id);
+                            bool = false;
+                            break;
+                        }
+                    }
+                    if(bool){
+                        var parent = document.getElementById("mainarea");
+                        var child = document.createElement("div");
+                        child.id="child"+i;
+                        for(let key in element){
+                            var d = document.createElement("span");
+                            if(key==="id"){
+                                d.innerHTML=element[key];
+                            }
+                            else{
+                                d.innerHTML=JSON.stringify(element[key]);
+                            }
+                            child.appendChild(d);
+                        }
+                        list.push(child.id);
+                        parent.appendChild(child);
+                        i++;
+                    }
+
+                });
+                for(var t=parentElement.children.length-1;t>=0;t--){
+                    var child = parentElement.children[t];
+                    var childid=child.id
+                    if(!list.includes(childid)){
+                        var rchild=document.getElementById(childid);
+                        parentElement.removeChild(rchild);
+                    }
+                }
+            })
+        })
+    }
+</script>
+
+<body>
+    <i>courseid</i>
+    <input type="number" id="id"></input>
+    <i>title</i>
+    <input type="text" id="title"></input>
+    <i>description</i>
+    <input type="text" id="description"></input>
+    <i>price</i>
+    <input type="number" id="price"></input>
+    <button onclick="addCourse()" >addCouse</button>
+    <div id = "mainarea"></div>
+</body>
